@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useState } from 'react';
 import { HiMenu, HiX } from 'react-icons/hi';
 
@@ -44,9 +44,12 @@ export default function Nav() {
             </>
           ) : (
             <>
-              <button onClick={() => signIn()} className="text-sm px-4 py-2 hover:text-white text-white/80">
+              <Link href="/login" className="text-sm px-4 py-2 hover:text-white text-white/80">
                 Log in
-              </button>
+              </Link>
+              <Link href="/signup" className="text-sm px-4 py-2 hover:text-white text-white/80">
+                Sign up
+              </Link>
               <Link
                 href="/upload"
                 className="text-sm px-4 py-2 rounded-xl bg-grad-primary shadow-glow font-medium"

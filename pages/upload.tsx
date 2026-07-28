@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSession, signIn } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 import { EFFECT_CATALOG, ASPECT_PRESETS } from '@/lib/effects';
 import { motion } from 'framer-motion';
 
@@ -7,6 +8,7 @@ type QueuedFile = { file: File; jobId?: string; status: string; progress: number
 
 export default function UploadPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [files, setFiles] = useState<QueuedFile[]>([]);
   const [aspect, setAspect] = useState<'vertical' | 'horizontal' | 'square' | 'original'>('vertical');
   const [toggles, setToggles] = useState<Record<string, boolean>>(
@@ -44,7 +46,7 @@ export default function UploadPage() {
   }
 
   async function startProcessing() {
-    if (!session) return signIn();
+    if (!session) return router.push('/login');
     const form = new FormData();
     files.forEach((f) => form.append('videos', f.file));
     form.append(

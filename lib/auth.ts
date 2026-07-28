@@ -46,7 +46,6 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: { strategy: 'jwt' },
-  pages: { signIn: '/' },
   providers,
   callbacks: {
     async session({ session, token }) {
