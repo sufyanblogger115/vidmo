@@ -1,0 +1,38 @@
+version: "3.9"
+services:
+  web:
+    build: .
+    command: sh -c "npx prisma migrate deploy && node server.js"
+    ports: ["3000:3000"]
+    env_file: .env
+    depends_on: [postgres, redis]
+    volumes:
+      - uploads:/data/uploads
+      - outputs:/data/outputs
+
+  worker:
+    build: .
+    command: npx tsx worker.ts
+    env_file: .env
+    depends_on: [postgres, redis]
+    volumes:
+      - uploads:/data/uploads
+      - outputs:/data/outputs
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: vidmorphx
+      POSTGRES_PASSWORD: vidmorphx
+      POSTGRES_DB: vidmorphx
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+volumes:
+  pgdata:
+  uploads:
+  outputs:
