@@ -114,7 +114,12 @@ const QUALITY_HEIGHT: Record<NonNullable<EditOptions['quality']>, number> = {
  * Build the ffmpeg video-filter chain for one job from the selected
  * options. Filters are composed in a fixed, dependency-safe order.
  */
-export function buildFilterChain(opts: EditOptions, srcWidth: number, srcHeight: number): string[] {
+export function buildFilterChain(
+  opts: EditOptions,
+  srcWidth: number,
+  srcHeight: number,
+  durationSec = 0
+): string[] {
   const filters: string[] = [];
   const targetH = QUALITY_HEIGHT[opts.quality || '1080p'];
 
@@ -166,7 +171,10 @@ export function buildFilterChain(opts: EditOptions, srcWidth: number, srcHeight:
   if (opts.speed && opts.speed !== 1) filters.push(`setpts=${(1 / opts.speed).toFixed(4)}*PTS`);
 
   // --- Fade in/out ------------------------------------------------------
-  if (opts.fadeInOut) filters.push('fade=t=in:st=0:d=0.6,fade=t=out:st=-0.6:d=0.6');
+  if (opts.fadeInOut) {
+    const fadeOutStart = Math.max(0, durationSec - 0.6);
+    filters.push(`fade=t=in:st=0:d=0.6,fade=t=out:st=${fadeOutStart.toFixed(2)}:d=0.6`);
+  }
 
   // --- Watermark (drawtext, bottom-right) -------------------------------
   if (opts.watermarkText) {
@@ -198,7 +206,7 @@ export function runEdit(
   onProgress?: (pct: number) => void
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const filters = buildFilterChain(opts, srcWidth, srcHeight);
+    const filters = buildFilterChain(opts, srcWidth, srcHeight, durationSec);
     const format = opts.format || 'mp4';
     const codec = format === 'webm' ? 'libvpx-vp9' : 'libx264';
     const audioCodec = format === 'webm' ? 'libopus' : 'aac';
