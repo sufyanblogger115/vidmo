@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 FROM base AS deps
 WORKDIR /app
 COPY package.json ./
+COPY prisma ./prisma
 RUN npm install
 
 FROM base AS builder
@@ -18,16 +19,18 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/lib ./lib
 COPY --from=builder /app/worker.ts ./worker.ts
-COPY --from=builder /app/node_modules/tsx ./node_modules/tsx
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/next.config.js ./next.config.js
+COPY start.sh ./start.sh
 
-RUN mkdir -p /data/uploads /data/outputs
+RUN mkdir -p /data/uploads /data/outputs && chmod +x start.sh
 
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["./start.sh"]
