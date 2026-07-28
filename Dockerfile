@@ -28,9 +28,8 @@ COPY --from=builder /app/lib ./lib
 COPY --from=builder /app/worker.ts ./worker.ts
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/next.config.js ./next.config.js
-COPY start.sh ./start.sh
 
-RUN mkdir -p /data/uploads /data/outputs && chmod +x start.sh
+RUN mkdir -p /data/uploads /data/outputs
 
 EXPOSE 3000
-CMD ["./start.sh"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss --skip-generate && (npx tsx worker.ts &) && npx next start -p ${PORT:-3000}"]
