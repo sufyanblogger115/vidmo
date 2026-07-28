@@ -231,6 +231,7 @@ export function runEdit(
       .audioCodec(audioCodec)
       .outputOptions(['-preset veryfast', '-crf 20', '-movflags +faststart'])
       .format(format)
+      .on('start', (cmd) => console.log('[ffmpeg cmd]', cmd))
       .on('stderr', (line) => {
         stderrLines.push(line);
         if (stderrLines.length > 40) stderrLines.shift();
