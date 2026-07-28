@@ -214,12 +214,18 @@ export function runEdit(
       filters.push(`select='not(${keepExpr})',setpts=N/FRAME_RATE/TB`);
     }
 
+    const stderrLines: string[] = [];
+
     command
       .videoFilters(filters)
       .videoCodec(codec)
       .audioCodec(audioCodec)
       .outputOptions(['-preset veryfast', '-crf 20', '-movflags +faststart'])
       .format(format)
+      .on('stderr', (line) => {
+        stderrLines.push(line);
+        if (stderrLines.length > 40) stderrLines.shift();
+      })
       .on('progress', (p) => {
         if (onProgress && durationSec > 0 && p.timemark) {
           const parts = p.timemark.split(':').map(Number);
@@ -228,7 +234,10 @@ export function runEdit(
         }
       })
       .on('end', () => resolve())
-      .on('error', reject)
+      .on('error', (err) => {
+        const detail = stderrLines.slice(-15).join('\n');
+        reject(new Error(`${err.message}\n--- ffmpeg output ---\n${detail}`));
+      })
       .save(outputPath);
   });
 }
