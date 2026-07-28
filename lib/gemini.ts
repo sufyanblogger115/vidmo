@@ -17,7 +17,7 @@ function requireClient() {
  */
 export async function transcribeForSubtitles(filePath: string, mimeType = 'audio/mp4') {
   const client = requireClient();
-  const model = client.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const model = client.getGenerativeModel({ model: 'gemini-3.6-flash' });
 
   const fileBuffer = fs.readFileSync(filePath);
   const base64 = fileBuffer.toString('base64');
@@ -44,7 +44,7 @@ Segments should be short (max ~8 words) and timestamps in seconds relative to fi
 /** Generate a title, description, and hashtags for the finished video. */
 export async function generateMetadata(context: string) {
   const client = requireClient();
-  const model = client.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const model = client.getGenerativeModel({ model: 'gemini-3.6-flash' });
   const prompt = `Based on this description of a short video: "${context}", write:
 1. A catchy title (max 8 words)
 2. A one-sentence description
