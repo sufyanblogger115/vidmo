@@ -131,6 +131,7 @@ export function buildFilterChain(
     const ratios: Record<string, number> = { vertical: 9 / 16, horizontal: 16 / 9, square: 1 };
     const targetRatio = ratios[opts.aspect];
     const srcRatio = srcWidth / srcHeight;
+    console.log(`[ffmpeg] aspect=${opts.aspect} srcWidth=${srcWidth} srcHeight=${srcHeight} srcRatio=${srcRatio.toFixed(4)} targetRatio=${targetRatio.toFixed(4)}`);
     if (targetRatio <= srcRatio) {
       // target is taller/narrower than source (e.g. landscape -> vertical) -> crop width, keep full height
       filters.push(`crop=ih*${targetRatio}:ih`);

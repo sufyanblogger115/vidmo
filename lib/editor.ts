@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import { prisma } from './database';
 import { probe, detectSilence, runEdit, generateThumbnail, ensureDir, EditOptions } from './ffmpeg';
 import { generateSrt } from './subtitle';
@@ -21,7 +22,17 @@ export async function processJob(jobId: string) {
 
   try {
     await setStage(jobId, STAGE_LABELS.analyze, 5);
+
+    try {
+      const stat = fs.statSync(job.inputPath);
+      console.log(`[editor] input file check: path=${job.inputPath} size=${stat.size} bytes`);
+    } catch (statErr: any) {
+      console.error(`[editor] input file MISSING: ${job.inputPath} — ${statErr.message}`);
+      throw new Error(`Input file not found on disk: ${job.inputPath}. It may have been lost on a container restart (no persistent volume attached).`);
+    }
+
     const info = await probe(job.inputPath);
+    console.log('[editor] probe result:', JSON.stringify(info));
 
     let trimRanges: { start: number; end: number }[] | undefined;
     if (opts.trimSilence) {
