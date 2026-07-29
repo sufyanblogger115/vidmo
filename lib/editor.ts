@@ -82,7 +82,13 @@ export async function processJob(jobId: string) {
     await setStage(jobId, STAGE_LABELS.compress, 96);
 
     const thumbPath = path.join(OUTPUT_DIR, `${job.id}.jpg`);
-    await generateThumbnail(outputPath, thumbPath, Math.min(1, info.durationSec / 4));
+    let thumbnailPath: string | null = thumbPath;
+    try {
+      await generateThumbnail(outputPath, thumbPath, Math.min(1, info.durationSec / 4));
+    } catch (thumbErr) {
+      console.error('[editor] thumbnail generation failed, continuing without it:', thumbErr);
+      thumbnailPath = null;
+    }
 
     await prisma.job.update({
       where: { id: jobId },
@@ -91,7 +97,7 @@ export async function processJob(jobId: string) {
         stage: STAGE_LABELS.done,
         progress: 100,
         outputPath,
-        thumbnailPath: thumbPath,
+        thumbnailPath,
         metadata: { ...(job.metadata as object), durationSec: info.durationSec, width: info.width, height: info.height },
       },
     });
