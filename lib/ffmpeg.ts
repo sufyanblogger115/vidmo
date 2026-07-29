@@ -128,11 +128,11 @@ export function buildFilterChain(
     const ratios: Record<string, number> = { vertical: 9 / 16, horizontal: 16 / 9, square: 1 };
     const targetRatio = ratios[opts.aspect];
     const srcRatio = srcWidth / srcHeight;
-    if (targetRatio > srcRatio) {
-      // target is taller/narrower than source -> crop width
+    if (targetRatio <= srcRatio) {
+      // target is taller/narrower than source (e.g. landscape -> vertical) -> crop width, keep full height
       filters.push(`crop=ih*${targetRatio}:ih`);
     } else {
-      // target is wider/shorter than source -> crop height
+      // target is wider/shorter than source (e.g. portrait -> landscape) -> crop height, keep full width
       filters.push(`crop=iw:iw/${targetRatio}`);
     }
   }
