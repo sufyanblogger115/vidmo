@@ -17,6 +17,11 @@ function toSrtTimestamp(seconds: number): string {
  * (the pipeline should degrade gracefully rather than fail the whole job).
  */
 export async function generateSrt(inputPath: string, outDir: string): Promise<string | null> {
+  // Gemini subtitles are temporarily disabled (free-tier quota / not yet on a paid
+  // plan). Re-enable by removing this early return once Gemini billing is set up.
+  return null;
+
+  // eslint-disable-next-line no-unreachable
   try {
     const segments = await transcribeForSubtitles(inputPath, 'video/mp4');
     if (!segments?.length) return null;
