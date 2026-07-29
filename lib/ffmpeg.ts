@@ -259,10 +259,21 @@ export function runEdit(
 /** Extract a single frame as a JPEG thumbnail. */
 export function generateThumbnail(inputPath: string, outputPath: string, atSec = 1): Promise<void> {
   return new Promise((resolve, reject) => {
+    const stderrLines: string[] = [];
     ffmpeg(inputPath)
-      .screenshots({ timestamps: [atSec], filename: path.basename(outputPath), folder: path.dirname(outputPath), size: '640x?' })
+      .seekInput(Math.max(0, atSec))
+      .outputOptions(['-frames:v 1', '-map 0:V:0'])
+      .videoFilters('scale=640:-2:flags=lanczos')
+      .format('image2')
+      .on('stderr', (line) => {
+        stderrLines.push(line);
+        if (stderrLines.length > 20) stderrLines.shift();
+      })
       .on('end', () => resolve())
-      .on('error', reject);
+      .on('error', (err) => {
+        reject(new Error(`[thumbnail] ${err.message}\n--- ffmpeg output ---\n${stderrLines.slice(-15).join('\n')}`));
+      })
+      .save(outputPath);
   });
 }
 

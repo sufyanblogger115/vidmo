@@ -77,6 +77,8 @@ export async function processJob(jobId: string) {
       }
     );
 
+    console.log(`[editor] runEdit succeeded for job ${jobId}, generating thumbnail...`);
+
     await setStage(jobId, STAGE_LABELS.compress, 96);
 
     const thumbPath = path.join(OUTPUT_DIR, `${job.id}.jpg`);
