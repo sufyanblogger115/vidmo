@@ -228,7 +228,7 @@ export function runEdit(
     const stderrLines: string[] = [];
 
     command
-      .outputOptions(['-map 0:v:0', '-map 0:a:0?'])
+      .outputOptions(['-map 0:V:0', '-map 0:a:0?'])
       .videoFilters(filters)
       .videoCodec(codec)
       .audioCodec(audioCodec)
