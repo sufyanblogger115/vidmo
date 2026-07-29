@@ -103,7 +103,7 @@ export interface EditOptions {
   subtitlesPath?: string; // path to .srt to burn in
   quality?: '720p' | '1080p' | '1440p' | '4K';
   format?: 'mp4' | 'mov' | 'webm';
-  trimRanges?: { start: number; end: number }[]; // ranges to CUT OUT
+  trimRanges?: { start: number; end: number }[]; // ranges to KEEP (non-silent segments)
 }
 
 const QUALITY_HEIGHT: Record<NonNullable<EditOptions['quality']>, number> = {
@@ -217,13 +217,13 @@ export function runEdit(
 
     let command = ffmpeg(inputPath);
 
-    // Cut out detected silence / unwanted ranges by building a segment
-    // select expression rather than re-encoding per-range (fast, single pass).
+    // editor.ts already computes trimRanges as the segments to KEEP
+    // (the non-silent parts) — select them directly, no extra negation.
     if (opts.trimRanges?.length) {
       const keepExpr = opts.trimRanges
         .map((r) => `between(t,${r.start},${r.end})`)
         .join('+');
-      filters.push(`select='not(${keepExpr})',setpts=N/FRAME_RATE/TB`);
+      filters.push(`select='${keepExpr}',setpts=N/FRAME_RATE/TB`);
     }
 
     const stderrLines: string[] = [];
