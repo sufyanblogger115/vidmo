@@ -1,9 +1,12 @@
 import ffmpeg from 'fluent-ffmpeg';
-import ffmpegPath from '@ffmpeg-installer/ffmpeg';
 import path from 'path';
 import fs from 'fs';
 
-ffmpeg.setFfmpegPath(ffmpegPath.path);
+// Use the system ffmpeg/ffprobe (installed via apt in the Docker image) rather than
+// the bundled @ffmpeg-installer static binary, which has limited codec support and
+// fails to decode common formats used by AI video generators (HEVC, AV1, etc.).
+ffmpeg.setFfmpegPath('/usr/bin/ffmpeg');
+ffmpeg.setFfprobePath('/usr/bin/ffprobe');
 
 export interface ProbeResult {
   durationSec: number;
