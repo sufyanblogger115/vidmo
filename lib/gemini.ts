@@ -27,9 +27,14 @@ no markdown fences, no commentary, in this exact shape:
 {"segments":[{"start":0.0,"end":2.4,"text":"..."}]}
 Segments should be short (max ~8 words) and timestamps in seconds relative to file start.`;
 
-  const result = await model.generateContent([
-    { inlineData: { data: base64, mimeType } },
-    { text: prompt },
+  const result = await Promise.race([
+    model.generateContent([
+      { inlineData: { data: base64, mimeType } },
+      { text: prompt },
+    ]),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Gemini transcription timed out (rate limited or unavailable)')), 20000)
+    ),
   ]);
 
   const raw = result.response.text().replace(/```json|```/g, '').trim();
@@ -50,7 +55,12 @@ export async function generateMetadata(context: string) {
 2. A one-sentence description
 3. 8 relevant hashtags
 Return ONLY strict JSON: {"title":"...","description":"...","hashtags":["..."]}`;
-  const result = await model.generateContent(prompt);
+  const result = await Promise.race([
+    model.generateContent(prompt),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Gemini metadata generation timed out')), 20000)
+    ),
+  ]);
   const raw = result.response.text().replace(/```json|```/g, '').trim();
   try {
     return JSON.parse(raw) as { title: string; description: string; hashtags: string[] };
