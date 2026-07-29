@@ -19,7 +19,7 @@ export default function UploadPage() {
   useEffect(() => {
     const pending = (window as any).__vmx_pending_files as FileList | undefined;
     if (pending?.length) {
-      setFiles(Array.from(pending).map((file) => ({ file, status: 'pending', progress: 0, stage: 'Ready' })));
+      setFiles(Array.from(pending).map((file) => ({ file, status: 'pending', progress: 0, stage: 'Not uploaded yet' })));
       (window as any).__vmx_pending_files = undefined;
     }
   }, []);
@@ -42,7 +42,7 @@ export default function UploadPage() {
 
   function addFiles(list: FileList | null) {
     if (!list?.length) return;
-    setFiles((prev) => [...prev, ...Array.from(list).map((file) => ({ file, status: 'pending', progress: 0, stage: 'Ready' }))]);
+    setFiles((prev) => [...prev, ...Array.from(list).map((file) => ({ file, status: 'pending', progress: 0, stage: 'Not uploaded yet' }))]);
   }
 
   async function startProcessing() {
@@ -71,7 +71,10 @@ export default function UploadPage() {
     );
 
     const res = await fetch('/api/upload', { method: 'POST', body: form });
-    if (!res.ok) return alert('Upload failed. Please try again.');
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      return alert(`Upload failed: ${body.error || res.statusText || 'unknown error'}`);
+    }
     const { jobs } = await res.json();
     setFiles((prev) =>
       prev.map((f, i) => (jobs[i] ? { ...f, jobId: jobs[i].id, status: jobs[i].status, stage: jobs[i].stage } : f))
